@@ -41,8 +41,8 @@ class _TransactionUserState extends State<TransactionUser> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        TransactionList(this._transaction),
         TransactionForm(this._addTransaction),
+        TransactionList(this._transaction),
       ],
     );
   }
