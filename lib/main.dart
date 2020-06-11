@@ -2,6 +2,7 @@ import 'package:expenses/components/transaction_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:expenses/models/transaction.dart';
+import 'components/chart.dart';
 import 'components/transaction_form.dart';
 import 'components/transaction_list.dart';
 import 'dart:math';
@@ -17,20 +18,24 @@ class ExpensesApp extends StatelessWidget {
         accentColor: Colors.amber,
         fontFamily: 'Quicksand',
         textTheme: ThemeData.light().textTheme.copyWith(
-          headline6: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          )
-        ),
+              headline6: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              button: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
         appBarTheme: AppBarTheme(
           textTheme: ThemeData.light().textTheme.copyWith(
-            headline6: TextStyle(
-              fontFamily: 'OpenSans',
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+                headline6: TextStyle(
+                  fontFamily: 'OpenSans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
         ),
       ),
       localizationsDelegates: [
@@ -49,20 +54,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> _transaction = [
-    /* Transaction(
-      id: 't1',
-      title: 'Novo tênis de Corrida',
-      value: 310.76,
-      date: DateTime.now(),
-    ),
-    Transaction(
-      id: 't2',
-      title: 'Conta de Luz',
-      value: 211.30,
-      date: DateTime.now(),
-    ), */
-  ];
+  final List<Transaction> _transaction = [];
+
+  List<Transaction> get _recentTransaction {
+    return this._transaction.where((tr) {
+      return tr.date.isAfter(DateTime.now().subtract(
+        Duration(days: 7),
+      ));
+    }).toList();
+  }
 
   _openTransactionForm(BuildContext context) {
     showModalBottomSheet(
@@ -72,17 +72,23 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  _addTransaction(String title, double value) {
+  _addTransaction(String title, double value, DateTime date) {
     final newTransaction = Transaction(
       id: Random().nextDouble().toString(),
       title: title,
       value: value,
-      date: DateTime.now(),
+      date: date,
     );
     setState(() {
       _transaction.add(newTransaction);
     });
     Navigator.of(context).pop();
+  }
+
+  _deleteTransaction(String id){
+    setState(() {
+      this._transaction.removeWhere((tr) => tr.id == id);
+    });
   }
 
   @override
@@ -101,18 +107,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Container(
-              width: double.infinity,
-              child: Card(
-                child: Text(
-                  'Gráfico',
-                  textAlign: TextAlign.center,
-                ),
-                elevation: 5,
-                color: Colors.blue,
-              ),
-            ),
-            TransactionList(this._transaction),
+            Chart(_recentTransaction),
+            TransactionList(this._transaction, _deleteTransaction),
           ],
         ),
       ),
